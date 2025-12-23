@@ -1,104 +1,113 @@
-# 🐾 Animal Care NGO Attendance System
+# 🐾 PawsCare: NGO Attendance & Tracking System
 
 [![Status](https://img.shields.io/badge/Status-Production--Ready-success?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
 [![Tech Stack](https://img.shields.io/badge/Stack-Node--Express--MongoDB-blue?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
 
-An elegant, production-ready attendance and tracking system built for animal care NGOs. Manage animal admissions, track their locations, and maintain detailed logs with ease.
+**PawsCare** is a sophisticated, glassmorphism-inspired web application designed for Animal Care NGOs to handle the end-to-end lifecycle of rescued animals. From mission Admission (Mark IN) to Recovery and Release (Mark OUT), PawsCare provides a unified platform for shelter management.
 
 ---
 
-## ✨ Key Features
+## 🚀 Key Features
 
-### 🔐 Secure Roles
-- **Staff (User)**: Streamlined interface to mark animals **IN** and **OUT**.
-- **Admin**: Full access + centralized dashboard with advanced analytics, filters, and logs.
+### 🔐 Enterprise-Grade Auth & Roles
+- **Secure Authentication**: JWT-based login for all staff.
+- **Role-Based Access (RBAC)**:
+    - **Staff**: Admission, tracking, and daily operations.
+    - **Admin**: Advanced analytics, user registration, and data management.
+- **User Initialization**: Dedicated server-side script for secure first-time admin creation.
 
-### 🐕 Intelligent Tracking
-- **Auto-Generated IDs**: Unique IDs (e.g., `DOG-20251217-XYZ12`) assigned to every admission.
-- **Real-time Status**: INSTANTLY see who is currently in the shelter vs. who has been released.
-- **Move Feature**: Seamlessly transfer animals between "Treatment Center" and "Rehab Center".
+### 🐕 Smart Admission & Tracking
+- **Dynamic Species Engine**: Intelligent subspecies selection for Dogs, Cats, Birds, Turtles, and Rabbits.
+- **Digital Medical Records**:
+    - **Remarks**: Log illnesses, injuries, and health updates.
+    - **Treatment Status**: Track "Treated" vs "Pending" status for every animal.
+- **Operational Moves**: One-click transfer between **Treatment centers** and **Rehab centers**.
+- **Quick Edit**: Instant correction of admission details without data loss.
 
-### 📊 Advanced Analytics & Logs
-- **Dynamic Search**: Filter by ID, Species, Incharge Person, or Date.
-- **Activity Stats**: Visual progress bars and counters for daily and total activity.
-- **Export (Admin)**: Export tracking data to CSV for reporting (Coming Soon).
+### 📊 Admin Intelligence Dashboard
+- **Real-Time Counters**: Instant visibility into current occupancy and daily movement.
+- **Visual Analytics**: Dynamic progress bars showing occupancy trends across different centers.
+- **Advanced Activity Logs**: 
+    - Powerful search by Job ID, Species, or Volunteer.
+    - Multi-parameter filtering (Date range, Destination, Status).
+- **Data Export**: Generate and download **CSV reports** for specific date ranges—perfect for stakeholder reporting.
+
+### 🎨 Premium User Experience
+- **Modern UI**: Sleek glassmorphism design with a dark-mode focused aesthetic.
+- **Animated UX**: Interactive intro animations and smooth layout transitions.
+- **Mobile Optimized**: Fully responsive interface for tablets and smartphones.
+- **Toast Notifications**: Real-time feedback for every action (admission, move, logout).
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: ![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) ![CSS](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) ![HTML](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) — *Vanilla SPA with Glassmorphism UI.*
-- **Backend**: ![Node](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white) — *High-performance REST API.*
-- **Database**: ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) — *NoSQL for flexible animal records.*
+- **Frontend**: ![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) ![CSS](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) ![HTML](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) — *Custom SPA Architecture.*
+- **Backend**: ![Node](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white) — *RESTful API with JWT Security.*
+- **Database**: ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) — *Mongoose-powered data persistence.*
+- **Deployment**: Configured for PAAS like **Render** and **Vercel**.
 
 ---
 
-## 🚀 Quick Start
+## 📂 Project Architecture
 
-### 1. Clone & Install
+```text
+├── client/           # Custom Frontend SPA
+│   ├── main.js       # Core Application Logic
+│   ├── styles.css    # Design System & UI
+│   └── index.html    # Entry Point
+├── server/
+│   ├── models/       # MongoDB Schemas (Animal & User)
+│   ├── routes/       # Auth & Tracking API Endpoints
+│   ├── middleware/   # JWT Verification
+│   └── index.js      # Express Server Entry
+├── .env              # Sensitive Configuration
+├── vercel.json       # Vercel Deployment Schema
+└── register-admin.js # Database Initialization Script
+```
+
+---
+
+## ⚙️ Installation & Setup
+
+### 1. Prerequisites
+- Node.js (v18+)
+- MongoDB Atlas account
+
+### 2. Setup
 ```bash
+# Clone the repository
 git clone https://github.com/jugal-ahir/PrayasMarked.git
 cd PrayasMarked
+
+# Install dependencies
 npm install
+
+# Create .env file
+# PORT=4000
+# MONGO_URI=your_mongodb_atlas_url
+# JWT_SECRET=your_security_key
+# ADMIN_EMAILS=comma,separated,emails
 ```
 
-### 2. Configure Environment
-Create a `.env` file in the root:
-```env
-PORT=4000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_random_secret_key
-ADMIN_EMAILS=vaghmashijugal@gmail.com
+### 3. Initialize Admin
+```bash
+# Update credentials in register-admin.js then run:
+node register-admin.js
 ```
 
-### 3. Register First Admin
-Since registration is disabled for security, use the initialization script:
-1. Edit `register-admin.js` with your desired credentials.
-2. Run: 
-   ```bash
-   node register-admin.js
-   ```
-
-### 4. Launch Project
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
 
 ---
 
-## 📂 Project Structure
+## 🤝 Contributing & Support
 
-```text
-├── client/           # Frontend SPA (Vanilla JS, CSS, HTML)
-├── server/
-│   ├── models/       # Mongoose Schemas (User, Animal)
-│   ├── routes/       # API Router (Auth, Tracking)
-│   └── middleware/   # Auth Protection
-├── .env              # Secrets (ignore in Git)
-├── vercel.json       # Deployment config
-└── register-admin.js # Initial setup script
-```
+This project was built with a focus on animal welfare. If you'd like to contribute, please open a PR!
 
----
-
-## ☁️ Deployment
-
-Built to work out-of-the-box on **Render** (Monolith) or **Vercel** (Split). See [walkthrough.md](file:///C:/Users/ASUS/.gemini/antigravity/brain/394276e5-5996-4ed7-9567-90ebafdb5a26/walkthrough.md) for detailed steps.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-*Developed with ❤️ for Animal Welfare.*
+*Developed with ❤️ by [Jugal Vaghmashi](https://github.com/jugal-ahir).*
 
 
