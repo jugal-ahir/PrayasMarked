@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Animal Care NGO - Attendance & Tracking</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="navbar">
+    <div class="navbar-inner">
+      <div class="brand">
+        <span class="brand-logo">🐾</span>
+        <span class="brand-text">PawsCare Attendance</span>
+      </div>
+      <nav class="nav-links" id="main-nav" style="display: none;">
+        <button data-view="dashboard" class="nav-link active">Dashboard</button>
+        <button data-view="logs" class="nav-link" id="logs-nav">Logs</button>
+      </nav>
+      <div class="user-role" id="user-panel" style="display: none;">
+        <button id="register-nav" class="btn-ghost" style="display: none;">Register user</button>
+        <div class="user-pill">
+          <span id="user-name-display"></span>
+          <span id="user-role-display" class="badge badge-in"></span>
+        </div>
+        <button id="logout-btn" class="btn-ghost">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section id="auth-view" class="view active">
+      <section class="hero">
+        <div class="hero-content">
+          <h1>Welcome to PawsCare Attendance</h1>
+          <p>
+            Sign in to securely track every animal entering and leaving your
+            shelter.
+          </p>
+        </div>
+      </section>
+
+      <section class="auth-layout">
+        <section class="card form-card">
+          <h2>Login</h2>
+          <form id="login-form">
+            <div class="form-row">
+              <label for="login-email">Email</label>
+              <input id="login-email" type="email" required />
+            </div>
+            <div class="form-row">
+              <label for="login-password">Password</label>
+              <input id="login-password" type="password" required />
+            </div>
+            <button type="submit" class="btn-primary">Login</button>
+          </form>
+        </section>
+      </section>
+    </section>
+    <section id="dashboard-view" class="view">
+      <section class="hero">
+        <div class="hero-content">
+          <h1>Gentle tracking for every rescued life.</h1>
+          <p>
+            A calm, focused dashboard to help your shelter team track animals
+            moving in and out of treatment and rehab — in seconds.
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span class="stat-label">Currently IN</span>
+            <span class="stat-value" id="stat-in-count">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Marked OUT today</span>
+            <span class="stat-value" id="stat-out-count">0</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="admin-analytics" class="card analytics-card" style="display: none;">
+        <div class="analytics-header">
+          <div>
+            <h2>Shelter activity snapshot</h2>
+            <p class="helper-text">
+              Quick overview of IN / OUT movement to help admins balance load across centers.
+            </p>
+          </div>
+          <button id="open-export-modal" class="btn-primary" style="margin-left: auto;">
+            <span>📥</span> Download CSV
+          </button>
+        </div>
+        <div class="analytics-grid">
+          <div class="analytics-tile">
+            <span class="tile-label">Total animals tracked</span>
+            <span class="tile-value" id="an-total">0</span>
+            <span class="tile-sub" id="an-total-sub">All time</span>
+          </div>
+          <div class="analytics-tile">
+            <span class="tile-label">Currently IN</span>
+            <span class="tile-value" id="an-in">0</span>
+            <span class="tile-sub" id="an-in-sub">Across all places</span>
+          </div>
+          <div class="analytics-tile">
+            <span class="tile-label">Marked OUT</span>
+            <span class="tile-value" id="an-out">0</span>
+            <span class="tile-sub" id="an-out-sub">Completed journeys</span>
+          </div>
+          <div class="analytics-tile">
+            <span class="tile-label">Today&apos;s movement</span>
+            <span class="tile-value" id="an-today">0</span>
+            <span class="tile-sub" id="an-today-sub">IN / OUT today</span>
+          </div>
+          <div class="analytics-tile">
+            <span class="tile-label">In Treatment Center</span>
+            <span class="tile-value" id="an-treatment">0</span>
+            <span class="tile-sub">Active cases</span>
+          </div>
+          <div class="analytics-tile">
+            <span class="tile-label">In Rehab Center</span>
+            <span class="tile-value" id="an-rehab">0</span>
+            <span class="tile-sub">Recovering</span>
+          </div>
+        </div>
+        <div class="analytics-bars" id="analytics-bars">
+          <!-- filled by JS -->
+        </div>
+      </section>
+
+
+
+      <section class="layout-grid">
+        <section class="card form-card">
+          <h2>Mark Animal IN</h2>
+          <form id="mark-in-form">
+            <div class="form-row">
+              <label for="job-id">Job ID</label>
+              <input id="job-id" type="text" placeholder="e.g. JOB-1234" required />
+            </div>
+            <div class="form-row">
+              <label for="species">Species</label>
+              <select id="species" required>
+                <option value="">Select species</option>
+                <option>Dog</option>
+                <option>Cat</option>
+                <option>Bird</option>
+                <option>Turtle</option>
+                <option>Rabbit</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="subspecies">Subspecies / Type</label>
+              <select id="subspecies" disabled>
+                <option value="">Select species first</option>
+              </select>
+              <input id="subspecies-other" type="text" placeholder="Specify other type..."
+                style="display: none; margin-top: 0.5rem;" />
+            </div>
+            <div class="form-row">
+              <label for="destination">Destination / Place</label>
+              <select id="destination" required>
+                <option value="">Select destination</option>
+                <option>Treatment Center</option>
+                <option>Rehab Center</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label for="incharge-person">Incharge Person</label>
+              <input id="incharge-person" type="text" placeholder="Name of person responsible" required />
+            </div>
+            <div class="form-row">
+              <label for="in-datetime">Date &amp; Time (IN)</label>
+              <input type="datetime-local" id="in-datetime" required />
+            </div>
+            <button type="submit" class="btn-primary">Mark IN</button>
+            <p class="helper-text">
+              The system will log your name.
+            </p>
+          </form>
+        </section>
+
+        <section class="card list-card">
+          <div class="card-header">
+            <h2>Marked IN Animals</h2>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input id="search-in-list" type="text" placeholder="Search" class="list-search-input" />
+              <button id="refresh-in" class="btn-ghost" style="padding: 0.25rem 0.5rem;">Refresh</button>
+            </div>
+          </div>
+          <div id="in-list" class="card-list empty-state">
+            <p>No animals currently marked IN.</p>
+          </div>
+        </section>
+
+        <section class="card list-card">
+          <div class="card-header">
+            <h2>Recently Marked OUT</h2>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input id="search-out-list" type="text" placeholder="Search" class="list-search-input" />
+              <button id="refresh-out" class="btn-ghost" style="padding: 0.25rem 0.5rem;">Refresh</button>
+            </div>
+          </div>
+          <div id="out-list" class="card-list empty-state">
+            <p>No recent OUT entries.</p>
+          </div>
+        </section>
+      </section>
+    </section>
+
+    <section id="logs-view" class="view">
+      <section class="card logs-filters">
+        <h2>Logs &amp; Search</h2>
+        <div class="form-row">
+          <label for="global-search">Quick search</label>
+          <input id="global-search" type="text"
+            placeholder="Search by Job ID, species, volunteer name, status (IN/OUT), or destination" />
+        </div>
+        <div class="filters-grid">
+          <div class="form-row">
+            <label for="search-id">Job ID</label>
+            <input id="search-id" type="text" placeholder="e.g. JOB-1234" />
+          </div>
+          <div class="form-row">
+            <label for="search-species">Species</label>
+            <input id="search-species" type="text" placeholder="Dog, Cat, Bird..." />
+          </div>
+          <div class="form-row">
+            <label for="search-user">User</label>
+            <input id="search-user" type="text" placeholder="Volunteer name" />
+          </div>
+          <div class="form-row">
+            <label for="filter-status">Status</label>
+            <select id="filter-status">
+              <option value="">All</option>
+              <option value="IN">IN</option>
+              <option value="OUT">OUT</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="filter-destination">Destination</label>
+            <select id="filter-destination">
+              <option value="">All places</option>
+              <option value="Treatment Center">Treatment Center</option>
+              <option value="Rehab Center">Rehab Center</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="from-date">From date</label>
+            <input id="from-date" type="date" />
+          </div>
+          <div class="form-row">
+            <label for="to-date">To date</label>
+            <input id="to-date" type="date" />
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button id="apply-filters" class="btn-primary">Apply</button>
+          <button id="clear-filters" class="btn-ghost">Clear</button>
+        </div>
+      </section>
+
+      <section class="logs-layout">
+        <section class="card list-card">
+          <div class="card-header">
+            <h2>Marked IN</h2>
+          </div>
+          <div id="logs-in-list" class="card-list empty-state">
+            <p>No matching IN entries.</p>
+          </div>
+        </section>
+        <section class="card list-card">
+          <div class="card-header">
+            <h2>Marked OUT</h2>
+          </div>
+          <div id="logs-out-list" class="card-list empty-state">
+            <p>No matching OUT entries.</p>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Designed with ❤️ by Jugal Vaghmashi</p>
+  </footer>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <div id="intro-overlay" class="intro-overlay hidden">
+    <div class="intro-inner">
+      <div class="intro-logo">🐾</div>
+      <div class="intro-text">
+        <h1>PawsCare Attendance</h1>
+        <p>Gently tracking every rescued life.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="register-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content card">
+      <div class="card-header">
+        <h2>Register new user</h2>
+        <button id="close-register" class="btn-ghost">Close</button>
+      </div>
+      <form id="register-form">
+        <div class="form-row">
+          <label for="register-name">Full name</label>
+          <input id="register-name" type="text" required />
+        </div>
+        <div class="form-row">
+          <label for="register-email">Email</label>
+          <input id="register-email" type="email" required />
+        </div>
+        <div class="form-row">
+          <label for="register-password">Password</label>
+          <input id="register-password" type="password" required />
+        </div>
+        <p class="helper-text">
+          New users will be created as staff members. If the email matches an
+          admin address configured on the server, they will get admin access.
+        </p>
+        <button type="submit" class="btn-primary">Create account</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="mark-out-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content card">
+      <h2>Mark Animal OUT</h2>
+      <p style="margin-bottom: 1rem; color: var(--text-soft);">Select the reason for marking out.</p>
+
+      <div class="form-row">
+        <label for="mark-out-type">Type / Reason</label>
+        <select id="mark-out-type">
+          <option value="Release">Release</option>
+          <option value="Dead">Dead</option>
+          <option value="Other">Other</option>
+        </select>
+        <input id="mark-out-reason" type="text" placeholder="Specify reason..."
+          style="display: none; margin-top: 0.5rem;" />
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+        <button id="cancel-mark-out" class="btn-ghost">Cancel</button>
+        <button id="confirm-mark-out" class="btn-primary">Confirm Mark OUT</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="change-dest-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content card">
+      <h2>Move Animal</h2>
+      <p style="margin-bottom: 1rem; color: var(--text-soft);">Select the new destination.</p>
+
+      <div class="form-row">
+        <label for="new-destination">New Destination</label>
+        <select id="new-destination">
+          <option value="Treatment Center">Treatment Center</option>
+          <option value="Rehab Center">Rehab Center</option>
+          <option value="Other">Other</option>
+        </select>
+        <!-- Similar to other modals, we could add 'Other' input if needed, but keeping it simple as per plan -->
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+        <button id="cancel-change-dest" class="btn-ghost">Cancel</button>
+        <button id="confirm-change-dest" class="btn-primary">Confirm Move</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="edit-animal-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content card">
+      <h2>Edit Animal Details</h2>
+      <p style="margin-bottom: 1rem; color: var(--text-soft);">Correct any mistakes below.</p>
+
+      <div class="form-row">
+        <label for="edit-job-id">Job ID</label>
+        <input id="edit-job-id" type="text" required />
+      </div>
+
+      <div class="form-row">
+        <label for="edit-species">Species</label>
+        <select id="edit-species" required>
+          <option value="">Select species</option>
+          <option>Dog</option>
+          <option>Cat</option>
+          <option>Bird</option>
+          <option>Turtle</option>
+          <option>Rabbit</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="edit-subspecies">Subspecies / Type</label>
+        <select id="edit-subspecies" disabled>
+          <option value="">Select species first</option>
+        </select>
+        <input id="edit-subspecies-other" type="text" placeholder="Specify other type..."
+          style="display: none; margin-top: 0.5rem;" />
+      </div>
+
+      <div class="form-row">
+        <label for="edit-destination">Destination</label>
+        <select id="edit-destination" required>
+          <option value="">Select destination</option>
+          <option>Treatment Center</option>
+          <option>Rehab Center</option>
+          <option>Other</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="edit-incharge">Incharge Person</label>
+        <input id="edit-incharge" type="text" required />
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+        <button id="cancel-edit" class="btn-ghost">Cancel</button>
+        <button id="confirm-edit" class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="remark-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content card">
+      <h2>Add Remark & Status</h2>
+      <p style="margin-bottom: 1rem; color: var(--text-soft);">Track illnesses, injuries, and treatment status.</p>
+
+      <div class="form-row">
+        <label for="remark-type">Reason / Type</label>
+        <select id="remark-type">
+          <option value="">None / Clear</option>
+          <option value="Illness">Illness</option>
+          <option value="Injured">Injured</option>
+          <option value="General Checkup">General Checkup</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-row" style="flex-direction: row; align-items: center; gap: 0.5rem; cursor: pointer;">
+        <input id="remark-treated" type="checkbox" style="width: auto;" />
+        <label for="remark-treated" style="margin-bottom: 0;">Treated (Yes/No)</label>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+        <button id="cancel-remark" class="btn-ghost">Cancel</button>
+        <button id="confirm-remark" class="btn-primary">Save Status</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="export-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content card">
+      <h2>Export Animal Data</h2>
+      <p style="margin-bottom: 1rem; color: var(--text-soft);">Select a date range for the CSV report.</p>
+
+      <div class="form-row">
+        <label for="export-start-date">From Date</label>
+        <input id="export-start-date" type="date" required />
+      </div>
+
+      <div class="form-row">
+        <label for="export-end-date">To Date</label>
+        <input id="export-end-date" type="date" required />
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end;">
+        <button id="cancel-export" class="btn-ghost">Cancel</button>
+        <button id="confirm-export" class="btn-primary">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+
+</html>
