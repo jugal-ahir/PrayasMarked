@@ -1,4 +1,4 @@
-# 🐾 PawsCare: NGO Attendance & Tracking System
+# 🐾 PrayasMarked: NGO Attendance & Tracking System
 
 [![Status](https://img.shields.io/badge/Status-Production--Ready-success?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
 [![Tech Stack](https://img.shields.io/badge/Stack-Node--Express--MongoDB-blue?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
