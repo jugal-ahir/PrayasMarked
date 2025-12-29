@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # 🐾 PawsCare: NGO Attendance & Tracking System
+=======
+# 🐾 PrayasMarked: NGO Attendance & Tracking System
+>>>>>>> fc88dcc522bc6bf64573f3e7498bbbd64e427362
 
 [![Status](https://img.shields.io/badge/Status-Production--Ready-success?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
 [![Tech Stack](https://img.shields.io/badge/Stack-Node--Express--MongoDB-blue?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
@@ -106,7 +110,11 @@ npm run dev
 
 ## 🤝 Contributing & Support
 
+<<<<<<< HEAD
 This project was built with a focus on animal welfare. If you'd like to contribute features like **Image Uploads** or **Notification Emails**, please open a PR!
+=======
+This project was built with a focus on animal welfare. If you'd like to contribute, please open a PR!
+>>>>>>> fc88dcc522bc6bf64573f3e7498bbbd64e427362
 
 *Developed with ❤️ by [Jugal Vaghmashi](https://github.com/jugal-ahir).*
 
