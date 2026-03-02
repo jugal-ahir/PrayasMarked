@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Animal Care NGO - Attendance & Tracking</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -17,6 +19,9 @@
       </div>
       <nav class="nav-links" id="main-nav" style="display: none;">
         <button data-view="dashboard" class="nav-link active">Dashboard</button>
+        <button data-view="mark-in" class="nav-link">Mark In</button>
+        <button data-view="marked-out" class="nav-link">Marked Out</button>
+        <button data-view="history" class="nav-link">History</button>
         <button data-view="logs" class="nav-link" id="logs-nav">Logs</button>
       </nav>
       <div class="user-role" id="user-panel" style="display: none;">
@@ -131,7 +136,7 @@
 
 
 
-      <section class="layout-grid">
+      <section class="layout-grid-dashboard">
         <section class="card form-card">
           <h2>Mark Animal IN</h2>
           <form id="mark-in-form">
@@ -182,12 +187,24 @@
             </p>
           </form>
         </section>
+      </section>
+    </section>
 
+    <section id="mark-in-view" class="view">
+      <section class="hero">
+        <div class="hero-content">
+          <h1>Mark In Animals</h1>
+          <p>This page shows all animals currently residing in the shelter across all centers.</p>
+        </div>
+      </section>
+
+      <section class="layout-grid-mark-in">
         <section class="card list-card">
           <div class="card-header">
-            <h2>Marked IN Animals</h2>
+            <h2>Current Residents</h2>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <input id="search-in-list" type="text" placeholder="Search" class="list-search-input" />
+              <input id="search-in-list" type="text" placeholder="Search Job ID or Species..."
+                class="list-search-input" />
               <button id="refresh-in" class="btn-ghost" style="padding: 0.25rem 0.5rem;">Refresh</button>
             </div>
           </div>
@@ -195,12 +212,23 @@
             <p>No animals currently marked IN.</p>
           </div>
         </section>
+      </section>
+    </section>
 
+    <section id="marked-out-view" class="view">
+      <section class="hero">
+        <div class="hero-content">
+          <h1>Marked Out Records</h1>
+          <p>Review all animals that have completed their journey and been marked out of the system today.</p>
+        </div>
+      </section>
+
+      <section class="layout-grid-marked-out">
         <section class="card list-card">
           <div class="card-header">
             <h2>Recently Marked OUT</h2>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <input id="search-out-list" type="text" placeholder="Search" class="list-search-input" />
+              <input id="search-out-list" type="text" placeholder="Search by Job ID..." class="list-search-input" />
               <button id="refresh-out" class="btn-ghost" style="padding: 0.25rem 0.5rem;">Refresh</button>
             </div>
           </div>
@@ -208,6 +236,45 @@
             <p>No recent OUT entries.</p>
           </div>
         </section>
+      </section>
+    </section>
+
+    <section id="history-view" class="view">
+      <section class="hero">
+        <div class="hero-content">
+          <h1>Medical & Journey History</h1>
+          <p>Explore the full timeline of every rescued animal, from admission to recovery and release.</p>
+        </div>
+      </section>
+
+      <section class="history-grid">
+        <aside class="history-sidebar">
+          <div class="sidebar-glass">
+            <div class="sidebar-header">
+              <h3>Animal Records</h3>
+              <div class="form-row" style="margin-top: 0.5rem; margin-bottom: 1rem; position: relative;">
+                <input id="history-sidebar-search" type="text" placeholder="Search Job ID or Species..."
+                  class="list-search-input" style="width: 100%; padding-right: 2.5rem;" />
+                <button id="clear-history-search" class="clear-search-btn" title="Clear search"
+                  style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.2rem; cursor: pointer; opacity: 0.5;">×</button>
+              </div>
+            </div>
+            <div id="history-animal-list" class="mini-card-list">
+              <!-- Animals loaded here -->
+              <p class="helper-text" style="text-align: center; padding: 1rem;">Loading records...</p>
+            </div>
+          </div>
+        </aside>
+
+        <main class="history-main">
+          <div id="timeline-container" class="timeline-container">
+            <div class="history-empty">
+              <div class="icon">🔍</div>
+              <h3>No Animal Selected</h3>
+              <p>Select an animal from the list on the left to view its full history.</p>
+            </div>
+          </div>
+        </main>
       </section>
     </section>
 
@@ -458,6 +525,23 @@
         <button id="cancel-remark" class="btn-ghost">Cancel</button>
         <button id="confirm-remark" class="btn-primary">Save Status</button>
       </div>
+    </div>
+  </div>
+
+  <div id="qr-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content card qr-card"
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div class="card-header" style="width: 100%;">
+        <h2>Animal QR Code</h2>
+        <button id="close-qr" class="btn-ghost">Close</button>
+      </div>
+      <div class="qr-container" style="display: flex; justify-content: center; align-items: center;">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+      <p class="qr-job-id" id="qr-display-id"></p>
+      <p class="helper-text" style="text-align: center;">Scan to quickly identify this animal in the shelter.</p>
+      <button id="download-qr" class="btn-primary" style="margin-top: 1rem; width: 100%;">Download QR</button>
     </div>
   </div>
 

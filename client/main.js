@@ -10,6 +10,8 @@ const SPECIES_DATA = {
   Other: ['Other']
 };
 
+let socket = null;
+
 let authToken = null;
 let currentUser = null;
 let currentMarkOutId = null; // Track which animal is being marked out
@@ -175,37 +177,45 @@ function renderAnimalCard(animal, { showMarkOut = false, showDelete = false } = 
   right.appendChild(badge);
 
   if (showMarkOut && animal.status === 'IN') {
-    const btnGroup = createElement('div');
-    btnGroup.style.display = 'flex';
-    btnGroup.style.gap = '0.5rem';
-    btnGroup.style.marginTop = '0.4rem';
+    const btnGroup = createElement('div', 'animal-actions');
 
-    // Move button (Left)
     const moveBtn = createElement('button', 'btn-ghost btn-move');
-    moveBtn.textContent = 'Move';
+    moveBtn.textContent = '📍 Move';
     moveBtn.title = 'Change Destination';
     moveBtn.onclick = () => handleChangeDestination(animal.jobId);
     btnGroup.appendChild(moveBtn);
 
-    // Edit button (Middle) - NEW
     const editBtn = createElement('button', 'btn-ghost');
-    editBtn.textContent = 'Edit';
+    editBtn.textContent = '✏️ Edit';
     editBtn.title = 'Edit Details';
     editBtn.onclick = () => handleEdit(animal);
     btnGroup.appendChild(editBtn);
 
-    // Remark button (New)
+    const historyBtn = createElement('button', 'btn-ghost');
+    historyBtn.textContent = '📜 History';
+    historyBtn.title = 'View record';
+    historyBtn.onclick = () => {
+      handleViewHistory(animal.jobId);
+      const hnav = document.querySelector('[data-view="history"]');
+      if (hnav) hnav.click();
+    };
+    btnGroup.appendChild(historyBtn);
+
     const remarkBtn = createElement('button', 'btn-ghost');
-    remarkBtn.textContent = 'Remark';
-    remarkBtn.title = 'Add health remark';
+    remarkBtn.textContent = '💬 Remark';
+    remarkBtn.title = 'Add health note';
     remarkBtn.onclick = () => handleRemark(animal);
     btnGroup.appendChild(remarkBtn);
 
-    // Mark OUT button (Right)
-    const btn = createElement('button', 'btn-ghost');
-    btn.textContent = 'Mark OUT';
-    btn.onclick = () => handleMarkOut(animal.jobId);
-    btnGroup.appendChild(btn);
+    const outBtn = createElement('button', 'btn-ghost');
+    outBtn.textContent = '🚪 OUT';
+    outBtn.onclick = () => handleMarkOut(animal.jobId);
+    btnGroup.appendChild(outBtn);
+
+    const qrBtn = createElement('button', 'btn-ghost');
+    qrBtn.textContent = '🎫 QR';
+    qrBtn.onclick = () => handleShowQR(animal.jobId);
+    btnGroup.appendChild(qrBtn);
 
     right.appendChild(btnGroup);
   }
@@ -685,9 +695,24 @@ function setupNav() {
       btn.classList.add('active');
       document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
       document.querySelector(`#${view}-view`).classList.add('active');
+      window.localStorage.setItem('pc_current_view', view);
 
       if (view === 'logs') {
         loadLogs();
+      }
+      if (view === 'dashboard') {
+        loadInAnimals();
+        loadOutAnimals();
+        loadAnalytics();
+      }
+      if (view === 'mark-in') {
+        loadInAnimals();
+      }
+      if (view === 'marked-out') {
+        loadOutAnimals();
+      }
+      if (view === 'history') {
+        loadHistoryAnimals();
       }
     });
   });
@@ -729,16 +754,16 @@ function showAppForUser() {
   logsNav.style.display = isAdmin ? 'inline-flex' : 'none';
   registerNav.style.display = isAdmin ? 'inline-flex' : 'none';
 
-  // Ensure dashboard is shown and other views hidden
-  document.querySelectorAll('.nav-link').forEach((b) => b.classList.remove('active'));
-  $('[data-view="dashboard"]').classList.add('active');
-  document.querySelectorAll('.view').forEach((v) => v.classList.remove('active'));
-  $('#dashboard-view').classList.add('active');
+  // Navigation persistence
+  const savedView = window.localStorage.getItem('pc_current_view') || 'dashboard';
+  const targetBtn = document.querySelector(`.nav-link[data-view="${savedView}"]`);
+  if (targetBtn) {
+    targetBtn.click();
+  } else {
+    $('[data-view="dashboard"]').click();
+  }
 
-  // Load initial data
-  loadInAnimals();
-  loadOutAnimals();
-  loadAnalytics(); // for everyone
+  setupSocket();
   if (currentUser.role === 'admin') {
     loadLogs();
   }
@@ -876,6 +901,139 @@ function handleLogout() {
   window.localStorage.removeItem('pc_user');
   showToast('Logged out.');
   showAuth();
+}
+
+function setupSocket() {
+  if (socket) return;
+  socket = io();
+
+  socket.on('animal_update', (data) => {
+    console.log('Real-time update received:', data);
+    // Refresh only if on dashboard or logs
+    const activeView = document.querySelector('.view.active').id;
+    if (activeView === 'dashboard-view' || activeView === 'active-view') {
+      loadInAnimals();
+      loadOutAnimals();
+      loadAnalytics();
+    } else if (activeView === 'logs-view' && currentUser && currentUser.role === 'admin') {
+      loadLogs();
+    } else if (activeView === 'history-view') {
+      loadHistoryAnimals();
+    }
+  });
+
+  socket.on('history_update', (data) => {
+    const historyJobId = $('#history-job-id').value.trim();
+    if (historyJobId === data.jobId) {
+      handleViewHistory();
+    }
+  });
+}
+
+function handleShowQR(jobId) {
+  const canvas = $('#qr-canvas');
+  const modal = $('#qr-modal');
+  $('#qr-display-id').textContent = jobId;
+
+  QRCode.toCanvas(canvas, jobId, {
+    width: 250,
+    margin: 2,
+    color: {
+      dark: '#0f172a',
+      light: '#ffffff'
+    }
+  }, function (error) {
+    if (error) {
+      console.error(error);
+      showToast('Error generating QR code');
+      return;
+    }
+    modal.classList.remove('hidden');
+  });
+}
+
+async function handleViewHistory(passedId = null) {
+  const jobId = passedId || $('#history-sidebar-search').value.trim() || ($('#history-job-id') ? $('#history-job-id').value.trim() : '');
+  if (!jobId && !passedId) {
+    showToast('Please select an animal or enter a Job ID');
+    return;
+  }
+
+  // Update sidebar active state
+  document.querySelectorAll('.mini-animal-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.id === jobId);
+  });
+
+  const container = $('#timeline-container');
+  container.innerHTML = '<div class="empty-state"><p>🔍 Searching records for ' + jobId + '...</p></div>';
+  container.classList.remove('empty-state');
+  container.classList.remove('has-items');
+
+  try {
+    const history = await fetchJSON(`/api/medical/${encodeURIComponent(jobId)}`);
+    container.innerHTML = '';
+    container.classList.add('has-items');
+
+    if (history.length === 0) {
+      container.classList.add('empty-state');
+      container.classList.remove('has-items');
+      container.innerHTML = `
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+            <h3>Timeline Empty</h3>
+            <p>Animal <strong>${jobId}</strong> is registered but has no journey logs yet.</p>
+          `;
+      return;
+    }
+
+    history.forEach(record => {
+      const item = createElement('div', 'timeline-item');
+      item.innerHTML = `
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">${new Date(record.date).toLocaleString()}</div>
+                    <div class="timeline-event">${record.event}</div>
+                    <div class="timeline-desc">${record.description}</div>
+                    <div class="timeline-by">By: ${record.performedBy}</div>
+                </div>
+            `;
+      container.appendChild(item);
+    });
+  } catch (e) {
+    container.classList.add('empty-state');
+    container.classList.remove('has-items');
+    container.innerHTML = `<h3>Error: ${e.message}</h3>`;
+  }
+}
+
+async function loadHistoryAnimals() {
+  const sidebarList = $('#history-animal-list');
+  const search = $('#history-sidebar-search').value.toLowerCase();
+
+  try {
+    const animals = await fetchJSON(`${API_BASE}${search ? '?search=' + encodeURIComponent(search) : ''}`);
+    sidebarList.innerHTML = '';
+
+    if (animals.length === 0) {
+      sidebarList.innerHTML = '<p class="helper-text" style="text-align: center; padding: 1rem;">No animals found.</p>';
+      return;
+    }
+
+    animals.forEach(animal => {
+      const card = createElement('div', 'mini-animal-card');
+      card.dataset.id = animal.jobId;
+      card.innerHTML = `
+        <div class="mini-avatar">${getSpeciesIcon(animal.species)}</div>
+        <div class="mini-info">
+          <h4>${animal.jobId}</h4>
+          <p>${animal.species} • ${animal.status}</p>
+        </div>
+      `;
+      card.onclick = () => handleViewHistory(animal.jobId);
+      sidebarList.appendChild(card);
+    });
+  } catch (e) {
+    sidebarList.innerHTML = `<p class="helper-text">Error: ${e.message}</p>`;
+  }
 }
 
 function setupEvents() {
@@ -1031,6 +1189,46 @@ function setupEvents() {
   if (confirmRemark) {
     confirmRemark.addEventListener('click', handleConfirmRemark);
   }
+
+  // History Sidebar Search
+  const sidebarSearch = $('#history-sidebar-search');
+  if (sidebarSearch) {
+    sidebarSearch.addEventListener('input', debounce(() => {
+      loadHistoryAnimals();
+    }, 300));
+  }
+
+  const clearHistorySearch = $('#clear-history-search');
+  if (clearHistorySearch) {
+    clearHistorySearch.addEventListener('click', () => {
+      $('#history-sidebar-search').value = '';
+      loadHistoryAnimals();
+      resetHistoryView();
+    });
+  }
+
+  function resetHistoryView() {
+    const container = $('#timeline-container');
+    container.classList.remove('has-items');
+    container.innerHTML = `
+    <div class="history-empty">
+      <div class="icon">🔍</div>
+      <h3>No Animal Selected</h3>
+      <p>Select an animal from the list on the left to view its full history.</p>
+    </div>
+  `;
+    document.querySelectorAll('.mini-animal-card').forEach(c => c.classList.remove('active'));
+  }
+
+  // QR Modal
+  $('#close-qr').addEventListener('click', () => $('#qr-modal').classList.add('hidden'));
+  $('#download-qr').addEventListener('click', () => {
+    const canvas = $('#qr-canvas');
+    const link = document.createElement('a');
+    link.download = `QR_${$('#qr-display-id').textContent}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+  });
 }
 
 document.addEventListener('DOMContentLoaded', () => {

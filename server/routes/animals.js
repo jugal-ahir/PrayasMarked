@@ -1,5 +1,6 @@
 const express = require('express');
 const Animal = require('../models/Animal');
+const MedicalRecord = require('../models/MedicalRecord');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -29,6 +30,17 @@ router.post('/in', requireAuth, async (req, res) => {
       inBy: req.user.name || req.user.email,
       status: 'IN'
     });
+
+    // Log History
+    await MedicalRecord.create({
+      jobId,
+      event: 'Admission',
+      description: `Animal admitted at ${destination} (Special: ${species}${subspecies ? '/' + subspecies : ''})`,
+      performedBy: req.user.name || req.user.email
+    });
+
+    // Real-time Update
+    if (req.io) req.io.emit('animal_update', { type: 'IN', animal });
 
     return res.status(201).json(animal);
   } catch (error) {
@@ -64,6 +76,12 @@ router.put('/:id', requireAuth, async (req, res) => {
       }
     }
 
+    // Track changes for history
+    const changes = [];
+    if (destination && destination !== animal.destination) changes.push(`Moved to ${destination}`);
+    if (isTreated !== undefined && isTreated !== animal.isTreated) changes.push(isTreated ? 'Marked as Treated' : 'Marked as Pending Treatment');
+    if (remark !== undefined && remark !== animal.remark) changes.push(`Remark updated: ${remark}`);
+
     // Update provided fields
     if (jobId) animal.jobId = jobId;
     if (species) animal.species = species;
@@ -74,6 +92,19 @@ router.put('/:id', requireAuth, async (req, res) => {
     if (isTreated !== undefined) animal.isTreated = isTreated;
 
     await animal.save();
+
+    // Log History if noteworthy
+    if (changes.length > 0) {
+      await MedicalRecord.create({
+        jobId: animal.jobId,
+        event: 'Update',
+        description: changes.join(', '),
+        performedBy: req.user.name || req.user.email
+      });
+    }
+
+    // Real-time Update
+    if (req.io) req.io.emit('animal_update', { type: 'UPDATE', animal });
 
     return res.json(animal);
   } catch (error) {
@@ -105,10 +136,44 @@ router.post('/out/:id', requireAuth, async (req, res) => {
 
     await animal.save();
 
+    // Log History
+    await MedicalRecord.create({
+      jobId: animal.jobId,
+      event: 'Mark OUT',
+      description: `Animal marked OUT as ${markOutType}${markOutReason ? ' (' + markOutReason + ')' : ''}`,
+      performedBy: req.user.name || req.user.email
+    });
+
+    // Real-time Update
+    if (req.io) req.io.emit('animal_update', { type: 'OUT', animal });
+
     return res.json(animal);
   } catch (error) {
     console.error('Error marking OUT:', error);
     return res.status(500).json({ message: 'Server error while marking OUT.' });
+  }
+});
+
+// Get all animals with optional search (for History selection)
+router.get('/', requireAuth, async (req, res) => {
+  try {
+    const { search } = req.query;
+    let query = {};
+    if (search) {
+      const regex = { $regex: search, $options: 'i' };
+      query = {
+        $or: [
+          { jobId: regex },
+          { species: regex },
+          { subspecies: regex }
+        ]
+      };
+    }
+    const animals = await Animal.find(query).sort({ updatedAt: -1 }).limit(50);
+    res.json(animals);
+  } catch (error) {
+    console.error('Error fetching animals:', error);
+    res.status(500).json({ message: 'Server error fetching animals.' });
   }
 });
 

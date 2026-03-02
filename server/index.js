@@ -6,8 +6,13 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const animalRoutes = require('./routes/animals');
+const medicalRoutes = require('./routes/medical.js');
 
 const app = express();
+const server = require('http').createServer(app);
+const socketUtil = require('./socket');
+const io = socketUtil.init(server);
+
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/animal_care_ngo';
 
@@ -15,9 +20,16 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/animal_car
 app.use(cors());
 app.use(express.json());
 
+// Inject IO into requests
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/animals', animalRoutes);
+app.use('/api/medical', medicalRoutes);
 
 // Health check
 app.get('/health', (req, res) => res.status(200).send('OK'));
@@ -38,7 +50,7 @@ mongoose
   })
   .then(() => {
     console.log('Connected to MongoDB');
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server listening on port ${PORT}`);
     });
   })
