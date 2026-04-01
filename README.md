@@ -1,121 +1,107 @@
-<<<<<<< HEAD
-# 🐾 PawsCare: NGO Attendance & Tracking System
-=======
 # 🐾 PrayasMarked: NGO Attendance & Tracking System
->>>>>>> fc88dcc522bc6bf64573f3e7498bbbd64e427362
 
 [![Status](https://img.shields.io/badge/Status-Production--Ready-success?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
 [![Tech Stack](https://img.shields.io/badge/Stack-Node--Express--MongoDB-blue?style=for-the-badge)](https://github.com/jugal-ahir/PrayasMarked)
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
 
-**PawsCare** is a sophisticated, glassmorphism-inspired web application designed for Animal Care NGOs to handle the end-to-end lifecycle of rescued animals. From mission Admission (Mark IN) to Recovery and Release (Mark OUT), PawsCare provides a unified platform for shelter management.
+**PrayasMarked** is a high-fidelity, glassmorphism-inspired web application designed for Animal Care NGOs to manage the entire lifecycle of rescued animals. From initial admission (**Mark IN**) to medical recovery and final release (**Mark OUT**), PrayasMarked provides a streamlined, digital-first platform for shelter operations.
 
 ---
 
-## 🚀 Key Features
+## 🌟 Key Features
 
-### 🔐 Enterprise-Grade Auth & Roles
-- **Secure Authentication**: JWT-based login for all staff.
-- **Role-Based Access (RBAC)**:
-    - **Staff**: Admission, tracking, and daily operations.
-    - **Admin**: Advanced analytics, user registration, and data management.
-- **User Initialization**: Dedicated server-side script for secure first-time admin creation.
+### 🔐 Enterprise-Grade Security
+- **JWT-Based Authentication**: Secure login system for all staff and administrators.
+- **Role-Based Access Control (RBAC)**:
+    - **Staff**: Manage daily admissions, health tracking, and operational moves.
+    - **Admin**: Access advanced analytics, manage users, and export critical data.
+- **Secure Initialization**: Dedicated script for first-time admin setup.
 
-### 🐕 Smart Admission & Tracking
-- **Dynamic Species Engine**: Intelligent subspecies selection for Dogs, Cats, Birds, Turtles, and Rabbits.
-- **Digital Medical Records**:
-    - **Remarks**: Log illnesses, injuries, and health updates.
-    - **Treatment Status**: Track "Treated" vs "Pending" status for every animal.
-- **Operational Moves**: One-click transfer between **Treatment centers** and **Rehab centers**.
-- **Quick Edit**: Instant correction of admission details without data loss.
+### 🐕 Intelligent Tracking Engine
+- **Smart Species Selector**: Context-aware subspecies selection for Dogs, Cats, Birds, Turtles, and Rabbits.
+- **Digital Health Records**: Log comprehensive medical remarks, treatment statuses, and recovery milestones.
+- **Operational Agility**: One-click transfers between **Treatment Centers** and **Rehabilitation Zones**.
+- **Real-Time Job Indexing**: Automatic Generation of Job IDs for every rescue mission.
 
-### 📊 Admin Intelligence Dashboard
-- **Real-Time Counters**: Instant visibility into current occupancy and daily movement.
+### 📊 Admin Intelligence & Reporting
+- **Real-Time Dashboard**: Instant visibility into shelter occupancy and daily movement via interactive counters.
 - **Visual Analytics**: Dynamic progress bars showing occupancy trends across different centers.
-- **Advanced Activity Logs**: 
-    - Powerful search by Job ID, Species, or Volunteer.
-    - Multi-parameter filtering (Date range, Destination, Status).
-- **Data Export**: Generate and download **CSV reports** for specific date ranges—perfect for stakeholder reporting.
+- **Audit-Ready Logs**: Powerful search and multi-parameter filtering (Date, Species, Volunteer).
+- **Data Portability**: Generate and download **CSV reports** for stakeholder reporting and compliance.
 
-### 🎨 Premium User Experience
-- **Modern UI**: Sleek glassmorphism design with a dark-mode focused aesthetic.
-- **Animated UX**: Interactive intro animations and smooth layout transitions.
-- **Mobile Optimized**: Fully responsive interface for tablets and smartphones.
-- **Toast Notifications**: Real-time feedback for every action (admission, move, logout).
+### 🎨 Premium UI/UX Experience
+- **Glassmorphism Design**: Modern, sleek aesthetic with a focus on dark-mode usability.
+- **Fluid UX**: Interactive entry animations and smooth transitions between modules.
+- **Mobile-First Responsive**: Tailored experience for on-field volunteers using smartphones and tablets.
+- **Action Feedback**: Real-time toast notifications for system-wide transparency.
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: ![JS](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) ![CSS](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) ![HTML](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) — *Custom SPA Architecture.*
-- **Backend**: ![Node](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white) — *RESTful API with JWT Security.*
-- **Database**: ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) — *Mongoose-powered data persistence.*
-- **Deployment**: Configured for PAAS like **Render** and **Vercel**.
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend** | ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black) |
+| **Backend** | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white) ![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white) |
+| **Database** | ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) |
+| **DevOps** | ![Git](https://img.shields.io/badge/Git-F05032?style=flat&logo=git&logoColor=white) ![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white) |
 
 ---
 
 ## 📂 Project Architecture
 
 ```text
-├── client/           # Custom Frontend SPA
-│   ├── main.js       # Core Application Logic
-│   ├── styles.css    # Design System & UI
-│   └── index.html    # Entry Point
+├── client/           # High-Fidelity Frontend SPA
+│   ├── main.js       # Central Application Logic
+│   ├── styles.css    # Global Design System
+│   └── index.html    # Application Entry
 ├── server/
-│   ├── models/       # MongoDB Schemas (Animal & User)
-│   ├── routes/       # Auth & Tracking API Endpoints
-│   ├── middleware/   # JWT Verification
-│   └── index.js      # Express Server Entry
-├── .env              # Sensitive Configuration
-├── vercel.json       # Vercel Deployment Schema
-└── register-admin.js # Database Initialization Script
+│   ├── models/       # Data Schemas (Animal, User, Medical)
+│   ├── routes/       # RESTful API Endpoints
+│   ├── middleware/   # Security & JWT Verification
+│   └── index.js      # Server Entry Point
+├── register-admin.js # Database Bootstrapping Script
+└── .env.example      # Environment Configuration Template
 ```
 
 ---
 
-## ⚙️ Installation & Setup
+## ⚙️ Quick Start
 
-### 1. Prerequisites
-- Node.js (v18+)
-- MongoDB Atlas account
-
-### 2. Setup
+### 1. Installation
 ```bash
-# Clone the repository
 git clone https://github.com/jugal-ahir/PrayasMarked.git
 cd PrayasMarked
-
-# Install dependencies
 npm install
-
-# Create .env file
-# PORT=4000
-# MONGO_URI=your_mongodb_atlas_url
-# JWT_SECRET=your_security_key
-# ADMIN_EMAILS=comma,separated,emails
 ```
 
-### 3. Initialize Admin
+### 2. Configuration
+Create a `.env` file in the root directory:
+```env
+PORT=4000
+MONGO_URI=your_mongodb_cluster_url
+JWT_SECRET=your_secure_secret_key
+ADMIN_EMAILS=admin@example.com
+```
+
+### 3. Initialize & Run
 ```bash
-# Update credentials in register-admin.js then run:
+# Initialize the first administrator
 node register-admin.js
-```
 
-### 4. Run Development Server
-```bash
+# Start the development server
 npm run dev
 ```
 
 ---
 
-## 🤝 Contributing & Support
+## 📄 Project Deliverables
+- **Final Report**: [Final_Report.pdf](./Final_Report.pdf) (See LaTeX source in `Final_Report.tex`)
+- **Survey Analysis**: Appendix of the final report contains user feedback data.
 
-<<<<<<< HEAD
-This project was built with a focus on animal welfare. If you'd like to contribute features like **Image Uploads** or **Notification Emails**, please open a PR!
-=======
-This project was built with a focus on animal welfare. If you'd like to contribute, please open a PR!
->>>>>>> fc88dcc522bc6bf64573f3e7498bbbd64e427362
+## 🤝 Contributing
+Contributions are what make the open-source community an amazing place. Any contributions you make are **greatly appreciated**. If you have a suggestion that would make this better, please fork the repo and create a pull request.
 
-*Developed with ❤️ by [Jugal Vaghmashi](https://github.com/jugal-ahir).*
+Developed with ❤️ by [Jugal Vaghmashi](https://github.com/jugal-ahir).
 
 
